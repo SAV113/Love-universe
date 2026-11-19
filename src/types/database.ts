@@ -286,3 +286,31 @@ export type InsertChatMessage = Omit<ChatMessage, 'id' | 'created_at'>;
 export type InsertSurprise = Omit<Surprise, 'id' | 'created_at'>;
 export type InsertLoveCapsule = Omit<LoveCapsule, 'id' | 'created_at'>;
 export type InsertDailyMessage = Omit<DailyMessage, 'id' | 'created_at'>;
+
+
+// ---------- Little Things ----------
+export interface LittleThing {
+  id: string;
+  content: string;
+  category: string | null;
+  author_id: string;
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ---------- Polaroids ----------
+export interface Polaroid {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  rotation: number;
+  position_x: number;
+  position_y: number;
+  author_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type InsertLittleThing = Omit<LittleThing, 'id' | 'created_at' | 'updated_at'>;
+export type InsertPolaroid = Omit<Polaroid, 'id' | 'created_at' | 'updated_at'>;

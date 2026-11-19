@@ -1,69 +1,174 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { Heart, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
+
+function StarField() {
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 80 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 2.5 + 0.5,
+        delay: Math.random() * 5,
+        duration: Math.random() * 3 + 2,
+      })),
+    []
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute rounded-full bg-white animate-twinkle"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: star.size,
+            height: star.size,
+            animationDelay: `${star.delay}s`,
+            animationDuration: `${star.duration}s`,
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      ))}
+    </div>
+  );
+}
+
+function FloatingHearts() {
+  const hearts = useMemo(
+    () =>
+      Array.from({ length: 8 }, (_, i) => ({
+        id: i,
+        x: 10 + Math.random() * 80,
+        size: 12 + Math.random() * 20,
+        delay: Math.random() * 8,
+        duration: 6 + Math.random() * 6,
+      })),
+    []
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {hearts.map((h) => (
+        <div
+          key={h.id}
+          className="absolute text-[var(--rose-pink)] opacity-20"
+          style={{
+            left: `${h.x}%`,
+            bottom: '-40px',
+            fontSize: h.size,
+            animation: `floatHeart ${h.duration}s ease-in-out ${h.delay}s infinite`,
+          }}
+        >
+          ♥
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      ))}
+      <style jsx>{`
+        @keyframes floatHeart {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 0.3;
+          }
+          90% {
+            opacity: 0.1;
+          }
+          100% {
+            transform: translateY(-100vh) rotate(45deg);
+            opacity: 0;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default function LandingPage() {
+  const [entered, setEntered] = useState(false);
+  const configured = isSupabaseConfigured();
+
+  return (
+    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#0B0B14] via-[#201537] to-[#0B0B14]">
+      <StarField />
+      <FloatingHearts />
+
+      {/* Ambient glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[var(--lavender)] opacity-[0.04] blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] rounded-full bg-[var(--rose-pink)] opacity-[0.03] blur-[100px] pointer-events-none" />
+
+      <AnimatePresence>
+        {!entered && (
+          <motion.div
+            className="relative z-10 flex flex-col items-center text-center px-6 max-w-2xl"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            {/* Icon */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+            >
+              <Heart className="w-16 h-16 text-[var(--rose-pink)] mb-6 animate-pulse-soft" fill="currentColor" />
+            </motion.div>
+
+            {/* Title */}
+            <motion.h1
+              className="text-5xl sm:text-7xl font-bold gradient-text mb-4 tracking-tight"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+            >
+              Our Little Universe
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              className="text-lg sm:text-xl text-[var(--muted-foreground)] mb-12 italic"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
+            >
+              A little world that belongs only to us.
+            </motion.p>
+
+            {/* CTA Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1, duration: 0.6 }}
+            >
+              <Link href={configured ? '/login' : '/setup'}>
+                <Button variant="romantic" size="xl" className="group">
+                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                  {configured ? 'ENTER OUR LITTLE WORLD' : 'SET UP OUR UNIVERSE'}
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Small decorative text */}
+            <motion.p
+              className="mt-8 text-xs text-[var(--muted-foreground)] opacity-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              transition={{ delay: 1.5 }}
+            >
+              ♥ Made with love ♥
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
